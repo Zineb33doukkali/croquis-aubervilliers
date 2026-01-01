@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Croquis – Parcours photographique d'Aubervilliers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet CSS & JS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <style>
+    :root{
+      --bg:#f5f1ea;
+      --accent:#2b6cb0;
+      --accent-soft:#c3d8f4;
+      --text-main:#1f2933;
+      --text-soft:#6b7280;
+      --card-bg:#ffffff;
+      --border:#e0ded8;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:var(--bg);
+      color:var(--text-main);
+      line-height:1.5;
+      padding:2rem 1rem 4rem;
+    }
+    .page{max-width:1100px;margin:0 auto}
+    h1{text-align:center;font-size:2rem;margin-bottom:.25rem}
+    h2{text-align:center;font-size:1.15rem;font-weight:500;color:var(--text-soft);margin-bottom:2rem}
+
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(0,2fr) minmax(300px,1fr);
+      gap:2.5rem;
+      align-items:start;
+    }
+    @media (max-width:900px){.layout{grid-template-columns:1fr}}
+
+    .timeline{position:relative;padding-left:2.5rem}
+    .timeline::before{
+      content:"";
+      position:absolute;left:1.1rem;top:0;bottom:0;
+      width:3px;background:linear-gradient(to bottom,var(--accent),var(--accent-soft));
+      border-radius:999px;
+    }
+    .step{position:relative;margin-bottom:1.75rem}
+    .step:last-child{margin-bottom:0}
+    .step-marker{
+      position:absolute;left:-0.1rem;top:.4rem;
+      width:1.4rem;height:1.4rem;border-radius:999px;
+      border:3px solid var(--accent);background:var(--bg);
+      display:flex;align-items:center;justify-content:center;
+      font-size:.75rem;font-weight:600;color:var(--accent);
+    }
+    .step-header{
+      font-size:.9rem;text-transform:uppercase;letter-spacing:.05em;
+      color:var(--text-soft);margin-bottom:.15rem;
+    }
+    .step-title{font-weight:600;margin-bottom:.3rem}
+
+    .photo-card{
+      background:var(--card-bg);
+      border-radius:14px;
+      padding:.9rem;
+      margin-top:.4rem;
+      border:1px solid var(--border);
+      box-shadow:0 10px 20px rgba(15,23,42,.07);
+      display:grid;
+      grid-template-columns:minmax(0,170px) minmax(0,1fr);
+      gap:.75rem;
+    }
+    @media (max-width:650px){.photo-card{grid-template-columns:1fr}}
+    .photo-card img{
+      width:100%;display:block;border-radius:10px;object-fit:cover;max-height:190px;
+    }
+    .photo-meta{font-size:.82rem}
+    .meta-row{
+      display:flex;flex-wrap:wrap;gap:.5rem 1rem;margin-bottom:.35rem;
+      font-size:.78rem;color:var(--text-soft);
+    }
+    .meta-pill{
+      display:inline-flex;align-items:center;gap:.25rem;
+      padding:.1rem .55rem;border-radius:999px;
+      background:var(--accent-soft);color:var(--accent);
+      font-size:.75rem;font-weight:500;
+    }
+    .meta-label{font-weight:600;font-size:.8rem;margin-top:.35rem}
+    ul.meta-list{margin:.1rem 0 .25rem 1rem;font-size:.82rem}
+
+    .side-panel{display:flex;flex-direction:column;gap:1.2rem}
+    .card{
+      background:var(--card-bg);
+      border-radius:16px;
+      border:1px solid var(--border);
+      padding:1rem 1.1rem;
+      box-shadow:0 10px 20px rgba(15,23,42,.06);
+      font-size:.9rem;
+    }
+    .card h3{font-size:1rem;margin-bottom:.5rem}
+    .exif-row{display:flex;align-items:center;gap:.4rem;font-size:.85rem;margin-bottom:.25rem}
+    .icon{width:1.1rem;text-align:center}
+
+    .chart-bar{display:flex;gap:.35rem;margin-top:.4rem;align-items:flex-end;height:80px}
+    .bar{flex:1;border-radius:999px 999px 4px 4px;background:var(--accent-soft);position:relative;overflow:hidden}
+    .bar::after{content:"";position:absolute;inset:auto 0 0 0;height:65%;background:var(--accent)}
+    .bar:nth-child(2)::after{height:45%}
+    .bar:nth-child(3)::after{height:30%}
+    .bar-labels{display:flex;justify-content:space-between;font-size:.75rem;margin-top:.3rem;color:var(--text-soft)}
+
+    /* MAP card */
+    #map{
+      width:100%;
+      height:320px;
+      border-radius:14px;
+      overflow:hidden;
+      border:1px solid var(--border);
+    }
+
+    footer{margin-top:2.5rem;text-align:center;font-size:.78rem;color:var(--text-soft)}
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header>
+      <h1>Croquis final – Parcours photographique d'Aubervilliers</h1>
+      <h2>Balade du 03/12/2025 – Visualisation interactive &amp; données EXIF</h2>
+    </header>
+
+    <section class="layout">
+      <!-- GAUCHE : TIMELINE -->
+      <section class="timeline" aria-label="Parcours à pied">
+        <article class="step">
+          <div class="step-marker">A</div>
+          <div class="step-header">10h15 – DÉPART</div>
+          <div class="step-title">Humathèque · MSH Paris Nord</div>
+          <p>Point de départ de la balade urbaine : observer l’urbanisme, l’architecture et les espaces verts.</p>
+        </article>
+
+        <article class="step">
+          <div class="step-marker">B</div>
+          <div class="step-header">10h30 env.</div>
+          <div class="step-title">Bâtiment JOP 2024 · Façade vitrée</div>
+
+          <div class="photo-card">
+            <img src="IMG-20251203-WA0024.jpg" alt="Bâtiment vitré" />
+            <div class="photo-meta">
+              <div class="meta-row">
+                <span class="meta-pill">📍 48.910436, 2.366671</span>
+                <span class="meta-pill">⬆ Alt. 20 m</span>
+                <span class="meta-pill">🕒 matin</span>
+              </div>
+              <p class="meta-label">Couleurs &amp; matière</p>
+              <ul class="meta-list"><li>Façade métal / verre (tons gris, beige).</li></ul>
+              <ul class="meta-list"><li>Arbres rouges/orangés (automne) + ciel bleu</li></ul>
+              <ul class="meta-list"><li>Sol bitume + grillage/clôture métallique</li></ul>
+              <p class="meta-label">Sentiment</p>
+              <ul class="meta-list"><li>Impression de modernité et de “grand équipement”</li></ul>
+              <ul class="meta-list"><li>Contraste fort nature (arbres) vs bâtiment très linéaire / vertical</li></ul>
+              <ul class="meta-list"><li>Ambiance plutôt calme, un peu “institutionnelle”</li></ul>
+              <p class="meta-label">Type d’urbanisme</p>
+              <ul class="meta-list"><li>Architecture contemporaine / grands ensembles</li></ul>
+              <ul class="meta-list"><li>Présence de mobilité douce (station vélos)</li></ul>
+              <ul class="meta-list"><li>Quartier récent avec grands volumes + équipements</li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="step">
+          <div class="step-marker">C</div>
+          <div class="step-header">10h45 env.</div>
+          <div class="step-title">Place du Front Populaire</div>
+
+          <div class="photo-card">
+            <img src="IMG-20251203-WA0025.jpg" alt="Front Populaire" />
+            <div class="photo-meta">
+              <div class="meta-row">
+                <span class="meta-pill">📍 ~48.91, ~2.36</span>
+                <span class="meta-pill">🚲 station vélos</span>
+              </div>
+              <p class="meta-label">Couleurs &amp; matière</p>
+              <ul class="meta-list"><li>Bâtiment blanc (béton/enduit) + vitrages</li></ul>
+              <ul class="meta-list"><li>Sol pierre / bitume + marquages de circulation</li></ul>
+              <ul class="meta-list"><li>Touches vives : rouge/bleu (vélos)</li></ul>
+              <p class="meta-label">Sentiment</p>
+              <ul class="meta-list"><li>Espace ouvert et fonctionnel</li></ul>
+              <ul class="meta-list"><li>Impression de lieu de passage, de circulation</li></ul>
+              <ul class="meta-list"><li>Atmosphère urbaine active, mais ordonnée</li></ul>
+              <p class="meta-label">Type d’urbanisme</p>
+              <ul class="meta-list"><li>Espace public (place / carrefour) lié à la mobilité</li></ul>
+              <ul class="meta-list"><li>Présence de mobilité douce (station vélos)</li></ul>
+              <ul class="meta-list"><li>Quartier récent avec grands volumes + équipements</li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="step">
+          <div class="step-marker">D</div>
+          <div class="step-header">11h00 env.</div>
+          <div class="step-title">La Forêt Urbaine</div>
+
+          <div class="photo-card">
+            <img src="IMG-20251203-WA0026.jpg" alt="Forêt urbaine" />
+            <div class="photo-meta">
+              <div class="meta-row">
+                <span class="meta-pill">🌳 espace vert</span>
+                <span class="meta-pill">☀ contre-jour</span>
+              </div>
+              <p class="meta-label">Couleurs &amp; lumière</p>
+              <ul class="meta-list"><li>Dominantes vert/jaune (feuillage) + sol terre/gravier</li></ul>
+              <ul class="meta-list"><li>Soleil très fort → zones claires et grandes ombres</li></ul>
+              <ul class="meta-list"><li>Ambiance “nature” : arbres, végétation dense</li></ul>
+              <p class="meta-label">Sentiment</p>
+              <ul class="meta-list"><li>Apaisement, sensation de respiration</li></ul>
+              <ul class="meta-list"><li>Chaleur lumineuse, moment calme</li></ul>
+              <ul class="meta-list"><li>Impression de pause dans la ville</li></ul>
+              <p class="meta-label">Type d’urbanisme</p>
+              <ul class="meta-list"><li>Espace vert urbain (parc / forêt urbaine)</li></ul>
+              <ul class="meta-list"><li>Aménagement de cheminement piéton</li></ul>
+              <ul class="meta-list"><li>Nature utilisée comme coupure et transition dans le tissu urbain</li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="step">
+          <div class="step-marker">E</div>
+          <div class="step-header">11h15 env.</div>
+          <div class="step-title">Terre Terre · Sculpture vache</div>
+
+          <div class="photo-card">
+            <img src="IMG-20251203-WA0027.jpg" alt="Vache bronze" />
+            <div class="photo-meta">
+              <div class="meta-row">
+                <span class="meta-pill">🎭 œuvre d’art</span>
+                <span class="meta-pill">🟢 bronze</span>
+              </div>
+              <p class="meta-label">Couleurs &amp; matière</p>
+              <ul class="meta-list"><li>Sculpture bronze/patine vert-de-gris</li></ul>
+               <ul class="meta-list"><li>Bois / métal des tables + sol béton/terre</li></ul>
+                <ul class="meta-list"><li>Couleurs d’automne : jaune/orange dans les arbres</li></ul>
+              <p class="meta-label">Sentiment</p>
+              <ul class="meta-list"><li>Surprise et côté “ludique”</li></ul>
+              <ul class="meta-list"><li>Impression de lieu convivial (on peut s’arrêter, s’asseoir)</li></ul>
+              <ul class="meta-list"><li>Mélange art / nature / détente</li></ul>
+              <p class="meta-label">Type d’urbanisme</p>
+              <ul class="meta-list"><li>Art dans l’espace public (installation)</li></ul>
+              <ul class="meta-list"><li>Logique de tiers-lieu / espace partagé (ferme urbaine, lieu pédagogique)</li></ul>
+              <ul class="meta-list"><li>Urbanisme de proximité : rencontre, pause, animation</li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="step">
+          <div class="step-marker">F</div>
+          <div class="step-header">11h30 env.</div>
+          <div class="step-title">CIFA / Collège Miriam Makeba</div>
+
+          <div class="photo-card">
+            <img src="IMG-20251203-WA0028.jpg" alt="Arbres et panneau" />
+            <div class="photo-meta">
+              <div class="meta-row">
+                <span class="meta-pill">🚸 zone piétonne</span>
+                <span class="meta-pill">⛔ signalisation</span>
+              </div>
+              <p class="meta-label">Couleurs &amp; matière</p>
+              <ul class="meta-list"><li>Dominantes vert/gris (arbres, sol)</li></ul>
+              <ul class="meta-list"><li>Panneau rouge/blanc très visible</li></ul>
+              <ul class="meta-list"><li>Feuilles au sol jaunes (automne), mobilier bois/métal</li></ul>
+              <p class="meta-label">Sentiment</p>
+              <ul class="meta-list"><li>Atmosphère quotidienne, “rue de quartier”</li></ul>
+              <ul class="meta-list"><li>Sensation de cadre régulé (signalisation), mais adouci par les arbres</li></ul>
+              <ul class="meta-list"><li>Impression de tranquillité (bancs, zone piétonne)</li></ul>
+              <p class="meta-label">Type d’urbanisme</p>
+              <ul class="meta-list"><li>Rue plantée : alignements d’arbres + bancs</li></ul>
+              <ul class="meta-list"><li>Espace pensé pour piétons / temps de pause</li></ul>
+              <ul class="meta-list"><li>Urbanisme “mixte” : circulation + aménagement paysager + mobilier</li></ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="step">
+          <div class="step-marker">G</div>
+          <div class="step-header">12h00 – FIN</div>
+          <div class="step-title">Vieux quartier d’Aubervilliers</div>
+          <p>Retour vers un tissu urbain plus ancien, mélange d’usages : synthèse des contrastes observés.</p>
+        </article>
+      </section>
+
+      <!-- DROITE : MAP + CARTES -->
+      <aside class="side-panel" aria-label="Analyse des données">
+        <!-- MAP DANS LA COLONNE DROITE -->
+        <section class="card">
+          <h3>Carte du parcours</h3>
+          <div id="map"></div>
+          <p style="font-size:.8rem;color:var(--text-soft);margin-top:.4rem;">
+            Cliquez sur un point bleu pour voir la photo + le résumé.
+          </p>
+        </section>
+
+      <section class="card">
+  <h3>Interface de valorisation des données</h3>
+
+  <p>
+    L’interface développée permet de valoriser les photographies prises lors de la balade
+    urbaine à travers une visualisation interactive combinant images, données spatiales
+    et informations descriptives.
+  </p>
+
+  <div class="exif-row">
+    <span class="icon">🖼️</span>
+    <span>
+      Les photographies sont affichées sous forme de cartes visuelles intégrées au parcours.
+    </span>
+  </div>
+
+  <div class="exif-row">
+    <span class="icon">📍</span>
+    <span>
+      Les métadonnées GPS (latitude, longitude, altitude) permettent de localiser chaque prise
+      de vue sur une carte interactive.
+    </span>
+  </div>
+
+  <div class="exif-row">
+    <span class="icon">🕒</span>
+    <span>
+      La date et l’heure de prise de vue contextualisent le parcours dans le temps
+      (rythme de la marche, moment de la journée).
+    </span>
+  </div>
+
+  <div class="exif-row">
+    <span class="icon">🧭</span>
+    <span>
+      Les informations d’orientation et de lumière aident à analyser les ambiances
+      urbaines et les conditions de prise de vue.
+    </span>
+  </div>
+
+  <p style="margin-top:0.6rem;">
+    L’ensemble de ces données peut être exporté et structuré (format <strong>CSV</strong>)
+    afin de produire des visualisations complémentaires : cartes dynamiques,
+    graphiques ou analyses comparatives.
+  </p>
+</section>
+
+
+       <section class="card">
+  <h3>Thèmes observés</h3>
+
+  <p>
+    La majorité des photographies prises pendant la balade concerne l’architecture contemporaine
+    et les grands équipements urbains.
+  </p>
+
+  <p>
+    Les espaces verts occupent également une place importante, avec la présence d’arbres de rue,
+    de parcs et d’une forêt urbaine.
+  </p>
+
+  <p>
+    Enfin, certaines images mettent en évidence l’art public et la signalisation, qui participent
+    à l’identité et aux usages de l’espace urbain.
+  </p>
+</section>
+
+
+        <section class="card">
+          <h3>Synthèse : Urbanisme</h3>
+          <ul style="margin-left:1rem;margin-top:.3rem;">
+            <li><strong>Architecture</strong> : bâtiments contemporains à grande échelle, façades vitrées et volumes simples, image de modernité.</li>
+            <li><strong>Espaces verts</strong> :arbres d’alignement + parc/forêt urbaine = rôle de transition et de confort climatique.</li>
+            <li><strong>Art &amp; signes</strong> :sculpture/objets urbains (ex : vache) qui donnent une dimension culturelle et pédagogique au quartier.</li>
+            <li><strong>Usages & mobilités</strong>place/carrefour, station vélos, bancs = espaces pensés pour circulation + pause.</li>
+            <li><strong>Conclusion</strong>Aubervilliers montre un urbanisme en contraste : grands équipements récents + nature en ville + quartier vécu.</li>
+          </ul>
+        </section>
+      </aside>
+    </section>
+
+    <footer>
+      Projet de visualisation de données – M2 ACEHN · Balade urbaine et observation d’Aubervilliers.
+    </footer>
+  </main>
+
+  <script>
+    const points = [
+      { id:"P1", name:"Bâtiment JOP 2024 · Façade vitrée", coords:[48.910436, 2.366671], img:"IMG-20251203-WA0024.jpg", desc:"Façade vitrée, arbres d'automne, architecture contemporaine." },
+      { id:"P2", name:"Place du Front Populaire", coords:[48.9109, 2.3690], img:"IMG-20251203-WA0025.jpg", desc:"Bâtiment clair, station de vélos, place publique." },
+      { id:"P3", name:"La Forêt Urbaine", coords:[48.9128, 2.3735], img:"IMG-20251203-WA0026.jpg", desc:"Chemin dans le parc, lumière forte, espace vert urbain." },
+      { id:"P4", name:"Terre Terre · Sculpture vache", coords:[48.9140, 2.3758], img:"IMG-20251203-WA0027.jpg", desc:"Sculpture en bronze, tables, ambiance ferme urbaine." },
+      { id:"P5", name:"CIFA / Collège Miriam Makeba", coords:[48.9155, 2.3795], img:"IMG-20251203-WA0028.jpg", desc:"Alignement d’arbres, bancs, panneau de circulation." }
+    ];
+
+    const map = L.map("map", { scrollWheelZoom: true }).setView([48.912, 2.372], 14);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    const latlngs = [];
+
+    points.forEach((p) => {
+      latlngs.push(p.coords);
+
+      const popupContent = `
+        <div style="max-width:220px;">
+          <strong>${p.name}</strong><br/>
+          <img src="${p.img}" alt="${p.name}"
+               style="width:100%; margin:6px 0; border-radius:8px;"/>
+          <span style="font-size:0.8rem;">${p.desc}</span>
+        </div>
+      `;
+
+      L.circleMarker(p.coords, {
+        radius: 7,
+        color: "#2563eb",
+        fillColor: "#2563eb",
+        fillOpacity: 0.9
+      }).addTo(map).bindPopup(popupContent);
+    });
+
+    L.polyline(latlngs, { color: "#2563eb", weight: 4, opacity: 0.85 }).addTo(map);
+    map.fitBounds(latlngs, { padding: [25, 25] });
+
+    // IMPORTANT : Leaflet a parfois besoin de recalculer la taille quand la carte est dans une grille
+    setTimeout(() => map.invalidateSize(), 150);
+  </script>
+</body>
+</html>
