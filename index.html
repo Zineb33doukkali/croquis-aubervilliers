@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -112,13 +113,6 @@
     .exif-row{display:flex;align-items:center;gap:.4rem;font-size:.85rem;margin-bottom:.25rem}
     .icon{width:1.1rem;text-align:center}
 
-    .chart-bar{display:flex;gap:.35rem;margin-top:.4rem;align-items:flex-end;height:80px}
-    .bar{flex:1;border-radius:999px 999px 4px 4px;background:var(--accent-soft);position:relative;overflow:hidden}
-    .bar::after{content:"";position:absolute;inset:auto 0 0 0;height:65%;background:var(--accent)}
-    .bar:nth-child(2)::after{height:45%}
-    .bar:nth-child(3)::after{height:30%}
-    .bar-labels{display:flex;justify-content:space-between;font-size:.75rem;margin-top:.3rem;color:var(--text-soft)}
-
     /* MAP card */
     #map{
       width:100%;
@@ -127,6 +121,67 @@
       overflow:hidden;
       border:1px solid var(--border);
     }
+
+    /* Data visualization (new) */
+    .viz-wrap{display:flex;flex-direction:column;gap:.75rem}
+    .viz-kpis{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:.6rem;
+    }
+    .kpi{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:.7rem .75rem;
+      background:#fff;
+    }
+    .kpi .label{font-size:.78rem;color:var(--text-soft)}
+    .kpi .value{font-size:1.05rem;font-weight:700;margin-top:.15rem}
+    .viz-chart{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:.6rem;
+      background:#fff;
+    }
+    .viz-chart h4{
+      font-size:.85rem;
+      margin-bottom:.4rem;
+      color:var(--text-main);
+    }
+    canvas{
+      width:100%;
+      height:160px;
+      display:block;
+    }
+    .mini-note{
+      font-size:.78rem;color:var(--text-soft);margin-top:.35rem
+    }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:#fff;
+    }
+    th, td{
+      padding:.55rem .55rem;
+      font-size:.82rem;
+      text-align:left;
+      border-bottom:1px solid var(--border);
+      vertical-align:top;
+    }
+    th{
+      background:rgba(195,216,244,.35);
+      color:var(--text-main);
+      font-weight:700;
+      font-size:.78rem;
+      letter-spacing:.02em;
+    }
+    tr:last-child td{border-bottom:none}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
 
     footer{margin-top:2.5rem;text-align:center;font-size:.78rem;color:var(--text-soft)}
   </style>
@@ -248,8 +303,8 @@
               </div>
               <p class="meta-label">Couleurs &amp; matière</p>
               <ul class="meta-list"><li>Sculpture bronze/patine vert-de-gris</li></ul>
-               <ul class="meta-list"><li>Bois / métal des tables + sol béton/terre</li></ul>
-                <ul class="meta-list"><li>Couleurs d’automne : jaune/orange dans les arbres</li></ul>
+              <ul class="meta-list"><li>Bois / métal des tables + sol béton/terre</li></ul>
+              <ul class="meta-list"><li>Couleurs d’automne : jaune/orange dans les arbres</li></ul>
               <p class="meta-label">Sentiment</p>
               <ul class="meta-list"><li>Surprise et côté “ludique”</li></ul>
               <ul class="meta-list"><li>Impression de lieu convivial (on peut s’arrêter, s’asseoir)</li></ul>
@@ -309,82 +364,138 @@
           </p>
         </section>
 
-      <section class="card">
-  <h3>Interface de valorisation des données</h3>
+        <section class="card">
+          <h3>Interface de valorisation des données</h3>
 
-  <p>
-    L’interface développée permet de valoriser les photographies prises lors de la balade
-    urbaine à travers une visualisation interactive combinant images, données spatiales
-    et informations descriptives.
-  </p>
+          <p>
+            L’interface développée permet de valoriser les photographies prises lors de la balade
+            urbaine à travers une visualisation interactive combinant images, données spatiales
+            et informations descriptives.
+          </p>
 
-  <div class="exif-row">
-    <span class="icon">🖼️</span>
-    <span>
-      Les photographies sont affichées sous forme de cartes visuelles intégrées au parcours.
-    </span>
-  </div>
+          <div class="exif-row">
+            <span class="icon">🖼️</span>
+            <span>
+              Les photographies sont affichées sous forme de cartes visuelles intégrées au parcours.
+            </span>
+          </div>
 
-  <div class="exif-row">
-    <span class="icon">📍</span>
-    <span>
-      Les métadonnées GPS (latitude, longitude, altitude) permettent de localiser chaque prise
-      de vue sur une carte interactive.
-    </span>
-  </div>
+          <div class="exif-row">
+            <span class="icon">📍</span>
+            <span>
+              Les métadonnées GPS (latitude, longitude, altitude) permettent de localiser chaque prise
+              de vue sur une carte interactive.
+            </span>
+          </div>
 
-  <div class="exif-row">
-    <span class="icon">🕒</span>
-    <span>
-      La date et l’heure de prise de vue contextualisent le parcours dans le temps
-      (rythme de la marche, moment de la journée).
-    </span>
-  </div>
+          <div class="exif-row">
+            <span class="icon">🕒</span>
+            <span>
+              La date et l’heure de prise de vue contextualisent le parcours dans le temps
+              (rythme de la marche, moment de la journée).
+            </span>
+          </div>
 
-  <div class="exif-row">
-    <span class="icon">🧭</span>
-    <span>
-      Les informations d’orientation et de lumière aident à analyser les ambiances
-      urbaines et les conditions de prise de vue.
-    </span>
-  </div>
+          <div class="exif-row">
+            <span class="icon">🧭</span>
+            <span>
+              Les informations d’orientation et de lumière aident à analyser les ambiances
+              urbaines et les conditions de prise de vue.
+            </span>
+          </div>
 
-  <p style="margin-top:0.6rem;">
-    L’ensemble de ces données peut être exporté et structuré (format <strong>CSV</strong>)
-    afin de produire des visualisations complémentaires : cartes dynamiques,
-    graphiques ou analyses comparatives.
-  </p>
-</section>
+          <p style="margin-top:0.6rem;">
+            L’ensemble de ces données peut être exporté et structuré (format <strong>CSV</strong>)
+            afin de produire des visualisations complémentaires : cartes dynamiques,
+            graphiques ou analyses comparatives.
+          </p>
+        </section>
 
+        <section class="card">
+          <h3>Thèmes observés</h3>
 
-       <section class="card">
-  <h3>Thèmes observés</h3>
+          <p>
+            La majorité des photographies prises pendant la balade concerne l’architecture contemporaine
+            et les grands équipements urbains.
+          </p>
 
-  <p>
-    La majorité des photographies prises pendant la balade concerne l’architecture contemporaine
-    et les grands équipements urbains.
-  </p>
+          <p>
+            Les espaces verts occupent également une place importante, avec la présence d’arbres de rue,
+            de parcs et d’une forêt urbaine.
+          </p>
 
-  <p>
-    Les espaces verts occupent également une place importante, avec la présence d’arbres de rue,
-    de parcs et d’une forêt urbaine.
-  </p>
+          <p>
+            Enfin, certaines images mettent en évidence l’art public et la signalisation, qui participent
+            à l’identité et aux usages de l’espace urbain.
+          </p>
+        </section>
 
-  <p>
-    Enfin, certaines images mettent en évidence l’art public et la signalisation, qui participent
-    à l’identité et aux usages de l’espace urbain.
-  </p>
-</section>
+        <!-- ✅ NOUVELLE VISUALISATION (3ème) : Données EXIF -> KPIs + Graphiques + Tableau -->
+        <section class="card">
+          <h3>Visualisation des données (GPS &amp; parcours)</h3>
 
+          <div class="viz-wrap">
+            <div class="viz-kpis">
+              <div class="kpi">
+                <div class="label">Nombre de points (photos)</div>
+                <div class="value" id="kpiCount">—</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Distance totale estimée (entre points)</div>
+                <div class="value" id="kpiDistance">—</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Latitude min → max</div>
+                <div class="value mono" id="kpiLatRange">—</div>
+              </div>
+              <div class="kpi">
+                <div class="label">Longitude min → max</div>
+                <div class="value mono" id="kpiLonRange">—</div>
+              </div>
+            </div>
+
+            <div class="viz-chart">
+              <h4>Profil d’altitude (m) par point</h4>
+              <canvas id="altChart" width="800" height="220"></canvas>
+              <div class="mini-note">Lecture : chaque barre correspond à une photo dans l’ordre du parcours (P1 → P5).</div>
+            </div>
+
+            <div class="viz-chart">
+              <h4>Distance cumulée (m) au fil du parcours</h4>
+              <canvas id="distChart" width="800" height="220"></canvas>
+              <div class="mini-note">Estimation à partir des coordonnées GPS (calcul “à vol d’oiseau” entre les points).</div>
+            </div>
+
+            <div class="viz-chart">
+              <h4>Table des métadonnées (extrait)</h4>
+              <table aria-label="Table des données GPS">
+                <thead>
+                  <tr>
+                    <th>Point</th>
+                    <th>Lieu</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                    <th>Altitude</th>
+                    <th>Distance depuis précédent</th>
+                  </tr>
+                </thead>
+                <tbody id="dataRows"></tbody>
+              </table>
+              <div class="mini-note">
+                Tu peux compléter ici plus tard : date/heure, orientation, etc., si tu les récupères depuis les EXIF.
+              </div>
+            </div>
+          </div>
+        </section>
 
         <section class="card">
           <h3>Synthèse : Urbanisme</h3>
           <ul style="margin-left:1rem;margin-top:.3rem;">
             <li><strong>Architecture</strong> : bâtiments contemporains à grande échelle, façades vitrées et volumes simples, image de modernité.</li>
-            <li><strong>Espaces verts</strong> :arbres d’alignement + parc/forêt urbaine = rôle de transition et de confort climatique.</li>
-            <li><strong>Art &amp; signes</strong> :sculpture/objets urbains (ex : vache) qui donnent une dimension culturelle et pédagogique au quartier.</li>
-            <li><strong>Usages & mobilités</strong>place/carrefour, station vélos, bancs = espaces pensés pour circulation + pause.</li>
-            <li><strong>Conclusion</strong>Aubervilliers montre un urbanisme en contraste : grands équipements récents + nature en ville + quartier vécu.</li>
+            <li><strong>Espaces verts</strong> : arbres d’alignement + parc/forêt urbaine = rôle de transition et de confort climatique.</li>
+            <li><strong>Art &amp; signes</strong> : sculpture/objets urbains (ex : vache) qui donnent une dimension culturelle et pédagogique au quartier.</li>
+            <li><strong>Usages &amp; mobilités</strong> : place/carrefour, station vélos, bancs = espaces pensés pour circulation + pause.</li>
+            <li><strong>Conclusion</strong> : Aubervilliers montre un urbanisme en contraste : grands équipements récents + nature en ville + quartier vécu.</li>
           </ul>
         </section>
       </aside>
@@ -396,14 +507,18 @@
   </main>
 
   <script>
+    // ✅ Données du parcours (tu peux ajouter time/orientation plus tard si tu veux)
     const points = [
-      { id:"P1", name:"Bâtiment JOP 2024 · Façade vitrée", coords:[48.910436, 2.366671], img:"IMG-20251203-WA0024.jpg", desc:"Façade vitrée, arbres d'automne, architecture contemporaine." },
-      { id:"P2", name:"Place du Front Populaire", coords:[48.9109, 2.3690], img:"IMG-20251203-WA0025.jpg", desc:"Bâtiment clair, station de vélos, place publique." },
-      { id:"P3", name:"La Forêt Urbaine", coords:[48.9128, 2.3735], img:"IMG-20251203-WA0026.jpg", desc:"Chemin dans le parc, lumière forte, espace vert urbain." },
-      { id:"P4", name:"Terre Terre · Sculpture vache", coords:[48.9140, 2.3758], img:"IMG-20251203-WA0027.jpg", desc:"Sculpture en bronze, tables, ambiance ferme urbaine." },
-      { id:"P5", name:"CIFA / Collège Miriam Makeba", coords:[48.9155, 2.3795], img:"IMG-20251203-WA0028.jpg", desc:"Alignement d’arbres, bancs, panneau de circulation." }
+      { id:"P1", name:"Bâtiment JOP 2024 · Façade vitrée", coords:[48.910436, 2.366671], alt:20, img:"IMG-20251203-WA0024.jpg", desc:"Façade vitrée, arbres d'automne, architecture contemporaine." },
+      { id:"P2", name:"Place du Front Populaire", coords:[48.9109, 2.3690],   alt:20, img:"IMG-20251203-WA0025.jpg", desc:"Bâtiment clair, station de vélos, place publique." },
+      { id:"P3", name:"La Forêt Urbaine",             coords:[48.9128, 2.3735], alt:20, img:"IMG-20251203-WA0026.jpg", desc:"Chemin dans le parc, lumière forte, espace vert urbain." },
+      { id:"P4", name:"Terre Terre · Sculpture vache",coords:[48.9140, 2.3758], alt:20, img:"IMG-20251203-WA0027.jpg", desc:"Sculpture en bronze, tables, ambiance ferme urbaine." },
+      { id:"P5", name:"CIFA / Collège Miriam Makeba", coords:[48.9155, 2.3795], alt:20, img:"IMG-20251203-WA0028.jpg", desc:"Alignement d’arbres, bancs, panneau de circulation." }
     ];
 
+    // ---------------------------
+    // 1) CARTE LEAFLET + CHEMIN
+    // ---------------------------
     const map = L.map("map", { scrollWheelZoom: true }).setView([48.912, 2.372], 14);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -438,6 +553,207 @@
 
     // IMPORTANT : Leaflet a parfois besoin de recalculer la taille quand la carte est dans une grille
     setTimeout(() => map.invalidateSize(), 150);
+
+    // ---------------------------
+    // 2) VISUALISATION DES DONNÉES (NEW)
+    // ---------------------------
+    // Haversine (distance "à vol d'oiseau")
+    function haversineMeters(a, b) {
+      const R = 6371000; // mètres
+      const toRad = (x) => x * Math.PI / 180;
+      const lat1 = toRad(a[0]), lon1 = toRad(a[1]);
+      const lat2 = toRad(b[0]), lon2 = toRad(b[1]);
+      const dLat = lat2 - lat1;
+      const dLon = lon2 - lon1;
+      const s1 = Math.sin(dLat/2);
+      const s2 = Math.sin(dLon/2);
+      const h = s1*s1 + Math.cos(lat1)*Math.cos(lat2)*s2*s2;
+      return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+    }
+
+    // KPIs + calculs
+    const lats = points.map(p => p.coords[0]);
+    const lons = points.map(p => p.coords[1]);
+    const latMin = Math.min(...lats), latMax = Math.max(...lats);
+    const lonMin = Math.min(...lons), lonMax = Math.max(...lons);
+
+    const segDistances = points.map((p, i) => {
+      if (i === 0) return 0;
+      return haversineMeters(points[i-1].coords, p.coords);
+    });
+
+    const cumDistances = segDistances.reduce((acc, d, i) => {
+      acc[i] = (acc[i-1] || 0) + d;
+      return acc;
+    }, []);
+
+    const totalDist = cumDistances[cumDistances.length - 1] || 0;
+
+    // Fill KPIs
+    document.getElementById("kpiCount").textContent = String(points.length);
+    document.getElementById("kpiDistance").textContent = `${Math.round(totalDist)} m`;
+    document.getElementById("kpiLatRange").textContent = `${latMin.toFixed(6)} → ${latMax.toFixed(6)}`;
+    document.getElementById("kpiLonRange").textContent = `${lonMin.toFixed(6)} → ${lonMax.toFixed(6)}`;
+
+    // Fill table
+    const tbody = document.getElementById("dataRows");
+    tbody.innerHTML = points.map((p, i) => {
+      const d = segDistances[i];
+      return `
+        <tr>
+          <td class="mono">${p.id}</td>
+          <td>${p.name}</td>
+          <td class="mono">${p.coords[0].toFixed(6)}</td>
+          <td class="mono">${p.coords[1].toFixed(6)}</td>
+          <td class="mono">${(p.alt ?? 0)} m</td>
+          <td class="mono">${i === 0 ? "—" : `${Math.round(d)} m`}</td>
+        </tr>
+      `;
+    }).join("");
+
+    // Simple chart helpers (Canvas)
+    function drawBarChart(canvas, labels, values, options = {}) {
+      const ctx = canvas.getContext("2d");
+
+      // Handle retina scaling for crispness
+      const cssW = canvas.clientWidth;
+      const cssH = canvas.clientHeight;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const W = cssW, H = cssH;
+      ctx.clearRect(0, 0, W, H);
+
+      const pad = 32;
+      const baseY = H - pad;
+      const maxV = Math.max(...values, 1);
+      const minV = Math.min(...values, 0);
+
+      const usableH = H - pad*2;
+      const usableW = W - pad*2;
+      const n = values.length;
+      const gap = 10;
+      const barW = Math.max(10, (usableW - gap*(n-1)) / n);
+
+      // Axes
+      ctx.strokeStyle = "rgba(107,114,128,0.55)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad, pad);
+      ctx.lineTo(pad, baseY);
+      ctx.lineTo(W - pad, baseY);
+      ctx.stroke();
+
+      // Bars
+      values.forEach((v, i) => {
+        const x = pad + i*(barW + gap);
+        const t = (v - minV) / (maxV - minV || 1);
+        const barH = Math.max(2, t * usableH);
+        const y = baseY - barH;
+
+        // bar bg
+        ctx.fillStyle = "rgba(195,216,244,0.9)";
+        ctx.fillRect(x, y, barW, barH);
+
+        // bar top (accent)
+        ctx.fillStyle = "rgba(43,108,176,0.85)";
+        ctx.fillRect(x, y, barW, Math.max(3, barH*0.6));
+
+        // value text
+        ctx.fillStyle = "rgba(31,41,51,0.85)";
+        ctx.font = "12px system-ui, -apple-system, Segoe UI, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(String(Math.round(v)), x + barW/2, y - 6);
+
+        // label
+        ctx.fillStyle = "rgba(107,114,128,0.9)";
+        ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+        ctx.fillText(labels[i], x + barW/2, baseY + 18);
+      });
+    }
+
+    function drawLineChart(canvas, labels, values) {
+      const ctx = canvas.getContext("2d");
+
+      const cssW = canvas.clientWidth;
+      const cssH = canvas.clientHeight;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const W = cssW, H = cssH;
+      ctx.clearRect(0, 0, W, H);
+
+      const pad = 32;
+      const minV = Math.min(...values, 0);
+      const maxV = Math.max(...values, 1);
+      const usableH = H - pad*2;
+      const usableW = W - pad*2;
+
+      // Axes
+      ctx.strokeStyle = "rgba(107,114,128,0.55)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pad, pad);
+      ctx.lineTo(pad, H - pad);
+      ctx.lineTo(W - pad, H - pad);
+      ctx.stroke();
+
+      const pts = values.map((v, i) => {
+        const x = pad + (i/(values.length-1 || 1))*usableW;
+        const t = (v - minV) / (maxV - minV || 1);
+        const y = (H - pad) - t*usableH;
+        return {x, y, v, label: labels[i]};
+      });
+
+      // Line
+      ctx.strokeStyle = "rgba(43,108,176,0.9)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      pts.forEach((p, i) => {
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.stroke();
+
+      // Points + labels
+      pts.forEach(p => {
+        ctx.fillStyle = "rgba(43,108,176,1)";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 5, 0, Math.PI*2);
+        ctx.fill();
+
+        ctx.fillStyle = "rgba(31,41,51,0.85)";
+        ctx.font = "12px system-ui, -apple-system, Segoe UI, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(String(Math.round(p.v)), p.x, p.y - 10);
+
+        ctx.fillStyle = "rgba(107,114,128,0.9)";
+        ctx.font = "12px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace";
+        ctx.fillText(p.label, p.x, (H - pad) + 18);
+      });
+    }
+
+    // Draw charts
+    function renderCharts() {
+      const altLabels = points.map(p => p.id);
+      const altValues = points.map(p => Number(p.alt ?? 0));
+      drawBarChart(document.getElementById("altChart"), altLabels, altValues);
+
+      const distLabels = points.map(p => p.id);
+      const distValues = cumDistances;
+      drawLineChart(document.getElementById("distChart"), distLabels, distValues);
+    }
+
+    // First render + on resize
+    renderCharts();
+    window.addEventListener("resize", () => {
+      renderCharts();
+    });
   </script>
 </body>
 </html>
+```
